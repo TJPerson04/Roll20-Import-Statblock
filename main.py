@@ -1,28 +1,6 @@
 import json
 import pyautogui
-
-# Functions
-# Formats AC or HP, returning an array of the two text fields (value and desc)
-# Also removes ()
-# Currently just removes italics formating
-def formatACorHP(text):
-    text = text.replace('(', '')
-    text = text.replace(')', '')
-    text = text.replace('_', '')
-    text = text.split(" ", 1)
-    return text
-
-
-def writeInfo(attr, text):
-    if (attr == 'otherArmorDesc' or attr == 'hpText'):
-        infoSplit = formatACorHP(text)
-        pyautogui.write(infoSplit[0])
-        pyautogui.press('tab')
-        pyautogui.write(infoSplit[1])
-        pyautogui.press('tab')
-    else:
-        pyautogui.write(text)
-        pyautogui.press('tab')
+import math
 
 
 # Constants
@@ -57,18 +35,70 @@ ATTR_IN_ORDER = [
     'legendaries',  # Very similar to bonusActions/reactions
     'mythics',  # Very similar to bonusActions/reactions
     # Will then need to click on + buttons for actions/reactions/etc
-
 ]
+
+ABILITIES = ['str', 'dex', 'con', 'int', 'wis', 'cha']
 
 # Gets the info from the file stats.monster
 statsFile = open('stats.monster')
 stats = json.loads(statsFile.read())
 
+
+# Functions
+def getProfBonus():
+    if (stats['customProf']):
+        return stats['customProf']
+    else:
+        return 0  # Figure out some way to get the prof bonus, prob from cr
+
+def getAbilityMod(ability):
+    score = int(stats[ability + 'Points'])
+    return math.floor((score - 10) / 2)
+
+# Formats AC or HP, returning an array of the two text fields (value and desc)
+# Also removes ()
+# Currently just removes italics formating
+def formatACorHP(text):
+    text = text.replace('(', '')
+    text = text.replace(')', '')
+    text = text.replace('_', '')
+    text = text.split(" ", 1)
+    return text
+
+# UNDER CONSTRUCTION
+# Writes out the saving throws line
+def writeSavingThrows(sthrows):
+    for ability in ABILITIES:
+        test = False
+        for throw in sthrows:
+            if (throw['name'] == ability):
+                test = True
+                pyautogui.write(str(getProfBonus() + getAbilityMod(ability)))
+                pyautogui.press('tab')
+        
+        if (not test):
+            pyautogui.press('tab')
+
+def writeInfo(attr, text):
+    if (attr == 'otherArmorDesc' or attr == 'hpText'):
+        infoSplit = formatACorHP(text)
+        pyautogui.write(infoSplit[0])
+        pyautogui.press('tab')
+        pyautogui.write(infoSplit[1])
+        pyautogui.press('tab')
+    elif (attr == 'sthrows'):
+        writeSavingThrows(text)
+    else:
+        pyautogui.write(text)
+        pyautogui.press('tab')
+
+
+# Main
 print(stats['name'])
 
 # Acutally writes the info to roll20
 pyautogui.hotkey('alt', 'tab')
-for i in range(11):
+for i in range(17):
     attr = ATTR_IN_ORDER[i]
     info = stats[attr]
     writeInfo(attr, info)
