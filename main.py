@@ -16,8 +16,8 @@ ATTR_IN_ORDER = [
     'intPoints',
     'wisPoints',
     'chaPoints',
-    'sthrows',  # Need more for each dif saving throw
-    'skills',  # Need more for each dif skill (tab if no prof/expertise)
+    'sthrows',
+    'skills',
     'specialdamage',  # Need more to check resistance vulnerability, also check if this is correct
     'conditions',  # Need more
     'darkvision',  # All the sense, don't display if there is none, display in one line otherwise
@@ -38,6 +38,7 @@ ATTR_IN_ORDER = [
 ]
 
 ABILITIES = ['str', 'dex', 'con', 'int', 'wis', 'cha']
+SKILLS = ['acrobatics', 'animal handling', 'arcana', 'athletics', 'deception', 'history', 'insight', 'intimidation', 'investigation', 'medicine', 'nature', 'perception', 'performance', 'persuasion', 'religion', 'sleight of hand', 'stealth', 'survival']
 
 # Gets the info from the file stats.monster
 statsFile = open('stats.monster')
@@ -65,7 +66,6 @@ def formatACorHP(text):
     text = text.split(" ", 1)
     return text
 
-# UNDER CONSTRUCTION
 # Writes out the saving throws line
 def writeSavingThrows(sthrows):
     for ability in ABILITIES:
@@ -74,6 +74,21 @@ def writeSavingThrows(sthrows):
             if (throw['name'] == ability):
                 test = True
                 pyautogui.write(str(getProfBonus() + getAbilityMod(ability)))
+                pyautogui.press('tab')
+        
+        if (not test):
+            pyautogui.press('tab')
+
+def writeSkillChecks(checks):
+    for skill in SKILLS:
+        test = False
+        for check in checks:
+            if (check['name'] == skill):
+                test = True
+                if (check['note'] == ' (ex)'):  # TEST THIS
+                    pyautogui.write(str(getProfBonus() * 2 + getAbilityMod(check['stat'])))
+                else:
+                    pyautogui.write(str(getProfBonus() + getAbilityMod(check['stat'])))
                 pyautogui.press('tab')
         
         if (not test):
@@ -88,6 +103,8 @@ def writeInfo(attr, text):
         pyautogui.press('tab')
     elif (attr == 'sthrows'):
         writeSavingThrows(text)
+    elif (attr == 'skills'):
+        writeSkillChecks(text)
     else:
         pyautogui.write(text)
         pyautogui.press('tab')
